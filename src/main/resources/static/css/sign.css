@@ -1,0 +1,89 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+}
+.container {
+    margin-top: 100px;
+    width: 400px;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.form-group input {
+    width: calc(100% - 22px); /* 패딩값 고려 */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+#custom-domain {
+    margin-right: 5px;
+}
+.form-group .error {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+}
+.check-btn {
+    display: inline-block;
+
+    text-align: center;
+    word-break: break-all; /* 2글자마다 줄바꿈 */
+    font-size: 12px;
+    line-height: 1.2;
+}
+.form-group .check-btn {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 4px 6px;
+    background-color: #777f77;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.form-group .check-btn:hover {
+    background-color: #0056b3;
+}
+.message {
+    padding: 10px;
+    font-size: 1em;
+    text-align: center;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+.error-message {
+    background-color: #ffcccc;
+    color: red;
+}
+.success-message {
+    background-color: #ccffcc;
+    color: green;
+}
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+.submit-btn:hover {
+    background-color: #218838;
+}

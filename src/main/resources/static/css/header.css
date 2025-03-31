@@ -1,0 +1,62 @@
+/* 헤더 스타일 */
+.header {
+    background-color: #333; /* 헤더 배경색 */
+    color: white;
+    padding: 15px 20px;
+    position: fixed; /* 스크롤해도 상단 고정 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* 좌우 배치 */
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* 다른 요소보다 위에 위치 */
+}
+
+/* 컨테이너 설정 */
+.container-header {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 로고 스타일 */
+.logo a {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+/* 네비게이션 링크 스타일 */
+.nav-links {
+    display: flex;
+    gap: 20px; /* 간격 조정 */
+}
+
+/* 네비게이션 링크 */
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+/* 네비게이션 링크 hover 효과 */
+.nav-links a:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.no-reviews {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    justify-content: center;
+    padding:20px 0 50px 0;
+}

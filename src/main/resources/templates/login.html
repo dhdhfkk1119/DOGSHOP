@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+    <th:block th:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/login.css}">
+    </th:block>
+</head>
+<body>
+<th:block th:fragment="content">
+<div class="login-container">
+    <h2>로그인</h2>
+    <form method="post" th:action="@{/login}">
+        <div class="login-id">
+            <label for="id">아이디</label>
+            <input type="text" id="id" name="username" placeholder="아이디 입력">
+        </div>
+        <div class="login-password">
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" name="password" placeholder="비밀번호 입력">
+        </div>
+        <!-- URL 파라미터에서 오류 메시지 표시 -->
+        <div th:if="${param.error}">
+            <div class="alert alert-danger" style="color: red;" th:text="${param.error}"></div>
+        </div>
+
+        <div class="login-submit">
+            <input type="submit" value="로그인">
+        </div>
+    </form>
+</div>
+</th:block>>
+<script>
+    // 오류 메시지를 한 번 출력한 후 세션에서 제거
+    window.onload = function() {
+        sessionStorage.removeItem("loginError");
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+  <th:block th:fragment="css">
+    <link rel="stylesheet" th:href="@{/css/product_list.css}">
+  </th:block>
+</head>
+<body>
+<th:block th:fragment="content">
+    <div class="product_list-container">
+        <div class="product-list-head">
+            <div class="product-font list-head">
+              <h2 class="product-h2">상품 목록</h2>
+            </div>
+            <div class="product-list-right">
+                <div class="product-list-search">
+                    <input type="text" name="search" id="search" placeholder="검색">
+                    <img th:src="@{/local-images/search-icon.png}" onclick="searchBtn()" class="search-icon"/>
+                </div>
+                <div class="sortAll list-head">
+                    <select id="sort" name="sort" onchange="changeSort()" required="required">
+                        <option value="latest" th:selected="${sort == 'latest'}">최신 순</option>
+                        <option value="viewst" th:selected="${sort == 'viewst'}">조회 순</option>
+                        <option value="salest" th:selected="${sort == 'salest'}">판매 순</option>
+                        <option value="likest" th:selected="${sort == 'likest'}">찜하기 순</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+      <div class="product-list">
+      <!-- content = 현재 페이지에 포함된 실제 갯수 만큼 반복   (실제 데이터(상품 목록)가 담겨 있는 필드) -->
+          <div class="product-item" th:each="product : ${productPage.content}">
+              <a th:href="@{|/productDetail/${product.product_idx}|}">
+                <div class="product-image">
+                    <img th:src="@{${'/product-images/' + product.product_image.split(',')[0]}}" alt="상품 이미지"> <!-- 첫 번째 이미지 -->
+                </div>
+              </a>
+              <div class="product-info">
+                  <span class="like">
+                            <span>❤️</span>
+                            <span class="product-like-count" th:text="${product.product_like}"></span>
+                    </span>
+                  <span class="comment">
+                            <span>💬</span>
+                            <span th:text="${product.product_coment}"></span>
+                    </span>
+              </div>
+              <div class="product-name">
+                 <p th:text="${product.productName}">상품 이름</p>
+              </div>
+              <div class="product-price">
+                  <div th:text="${#numbers.formatInteger(product.product_price, 3, 'COMMA') + ' 원'}"></div>
+              </div>
+          </div>
+          <div th:if="${#lists.isEmpty(productPage)}" class="no-reviews">
+              아직 등록된 상품이 없습니다.
+          </div>
+      </div>
+      <!-- 페이지네이션 버튼 추가 -->
+      <div class="pagination">
+          <ul>
+              <li th:if="${productPage.hasPrevious()}">
+                  <a th:href="@{/product_list(page=${productPage.number - 1}, sort=${sort})}">이전</a>
+              </li>
+
+              <li th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}">
+                  <a th:href="@{/product_list(page=${i}, sort=${sort})}" th:text="${i + 1}"
+                   th:classappend="${i == productPage.number ? 'active' : ''}"></a>
+              </li>
+
+              <li th:if="${productPage.hasNext()}">
+                 <a th:href="@{/product_list(page=${productPage.number + 1}, sort=${sort})}">다음</a>
+              </li>
+          </ul>
+      </div>
+    </div>
+</th:block>
+</body>
+</html>
+<script>
+  // 페이지 로드 시 저장된 정렬 값 적용
+  document.addEventListener("DOMContentLoaded", function () {
+    const sortSelect = document.getElementById("sort");
+    const inputsearch = document.getElementById("search");
+
+    // URL에서 검색어(search)와 정렬값(sort)을 가져옴
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlSearch = urlParams.get("search"); // URL에서 search 값 가져오기
+    const urlSort = urlParams.get("sort"); // URL에서 sort 값 가져오기
+
+    // URL에서 search 값이 있으면 input에 설정하고, 없으면 비워둠
+    if (urlSearch) {
+      inputsearch.value = urlSearch;
+    } else {
+      inputsearch.value = ""; // 검색어가 없다면 비워둠
+    }
+
+    // URL에서 sort 값이 있으면 드롭다운에 설정하고, 없으면 기본값 설정
+    if (urlSort) {
+      sortSelect.value = urlSort;
+    } else {
+      sortSelect.value = "latest"; // 기본값 설정
+    }
+  });
+
+  // 선택한 값 URL로 보내기
+  function changeSort() {
+    let selectedSort = document.getElementById("sort").value;
+    let currentUrl = new URL(window.location.href);
+    let searchValue = document.getElementById("search").value;
+
+    currentUrl.searchParams.set("sort", selectedSort);  // sort 파라미터 추가 또는 변경
+    currentUrl.searchParams.set("page", 0); // 정렬 변경 시 첫 페이지로 이동
+
+    if (searchValue) {
+      currentUrl.searchParams.set("search", searchValue); // 검색어가 있으면 유지
+    }
+
+    window.location.href = currentUrl.toString(); // 새 URL로 이동
+
+  }
+
+  //검색한 값 보내기
+  function searchBtn(){
+    let searchValue = document.getElementById("search").value.trim();
+
+    if(searchValue){
+      const url = new URL(window.location);
+      url.searchParams.set("search",searchValue);
+      window.location.href = url.toString();
+    }
+  }
+  // 🔹 엔터 키 감지 이벤트 추가
+  document.getElementById("search").addEventListener("keyup", function (event) {
+    if (event.key === "Enter") { // 엔터 키 감지
+      searchBtn(); // 검색 실행
+    }
+  });
+
+
+
+</script>

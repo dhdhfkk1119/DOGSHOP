@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <th:block th:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/mypage.css}">
+    </th:block>
+</head>
+<body>
+<th:block th:fragment="content">
+    <div class="profile-container">
+        <div>
+            <h2>Mypage</h2>
+        </div>
+
+        <!-- 프로필 이미지와 정보 -->
+        <div class="profile-warp">
+            <div class="profile">
+                <img th:src="@{${'/profile-images/' + UserImage}}" alt="Profile Image" />
+                <div class="user-info">
+                    <span class="username" th:text="${name}"></span>
+                    <span class="role" th:text="${role}">ROLE_USER</span>
+                </div>
+                <div class="change-profile">
+                    <a th:href="@{/snap}">스냅 변경</a>
+                </div>
+            </div>
+
+            <!-- 총 구매 금액 -->
+            <div class="section">
+                <div class="section-title">총 구매 금액 및 수량</div>
+                <div class="total-info">
+                    <span class="total-price" th:text="${#numbers.formatInteger(totalPrice, 3, 'COMMA') + '원'}"></span>
+                    <span class="total-border">
+                        <span class="total-quantity" th:text="${totalQuantity}"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 주문 내역 -->
+        <div class="section order-history">
+            <div class="section-title">주문 내역</div>
+            <div class="link"><a href="/cancel">주문 교환/취소 내역</a></div>
+            <div class="link"><a href="/order">주문 내역 보기</a></div>
+        </div>
+
+        <!-- QnA 내역 -->
+        <div class="section qna-history">
+            <div class="section-title">QnA 내역</div>
+            <div class="link">1:1 고객 센터 보기</div>
+            <div class="link">QnA 내역 보기</div>
+        </div>
+
+    </div>
+
+</th:block>
+</body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const btns = document.querySelectorAll(".review-wishlist-btn");
+
+        btns.forEach(btn => {
+            const reviewproductIdx = btn.querySelector("input[name='review_idx']").value;
+            const heartIcon = btn.querySelector("span"); // ❤️ 또는 🖤 아이콘을 변경할 요소
+            const likeCountSpan = btn.querySelector(".review-like-count"); // 좋아요 개수 표시하는 요소
+
+            // 개별 리뷰의 찜 상태 및 개수 확인 (GET 요청)
+            fetch(`/review/like-status/${reviewproductIdx}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    heartIcon.textContent = data.status === "liked" ? "❤️" : "🖤";
+                    likeCountSpan.textContent = data.likeCount; // 좋아요 개수 업데이트
+                })
+                .catch(error => console.error("Error:", error));
+
+            // 개별 찜 버튼 클릭 이벤트 추가
+            btn.addEventListener("click", function () {
+                fetch(`/review/like/${reviewproductIdx}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include"
+                })
+                    .then(response => {
+                        if (response.status === 401) {
+                            alert("로그인해주시기 바랍니다.");
+                            window.location.href = "/login";
+                            return;
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === "added") {
+                            heartIcon.textContent = "❤️"; // 찜 추가됨
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1; // 숫자 즉시 증가
+                        } else if (data.status === "removed") {
+                            heartIcon.textContent = "🖤"; // 찜 취소됨
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1; // 숫자 즉시 감소
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+</script>
+</html>

@@ -1,0 +1,112 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+}
+
+.login-container {
+    width: 400px;
+    margin: 100px auto;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.submit-container {
+    text-align: center;
+}
+
+.submit-container input {
+    width: 100%;
+    background: #333;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.submit-container input:hover {
+    background: #555;
+}
+.alert-danger {
+    padding: 10px;
+    font-size: 1em;
+    text-align: center;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+.alert-danger {
+    background-color: #ffcccc;
+    color: red;
+}
+
+.login-id,
+.login-password {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 라벨과 인풋 사이 간격 */
+    margin-bottom: 15px;
+}
+
+.login-id label,
+.login-password label {
+    width: 80px; /* 라벨 고정 크기 */
+    text-align: right;
+}
+
+.login-id input,
+.login-password input {
+    flex: 1; /* 남은 공간을 전부 차지 */
+    padding: 8px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.login-submit {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.login-submit input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+
+
+
+
+
+

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <th:block th:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/productDetail.css}">
+    </th:block>
+</head>
+<body>
+<th:block th:fragment="content">
+    <div class="productDetail-container">
+        <div class="productDetail-inner">
+            <!-- 상품 이미지 -->
+            <div class="product-image">
+                <div class="slider">
+                    <img th:each="imgUrl : ${product_images}"  th:src="@{${'/product-images/' + imgUrl}}" alt="">
+                </div>
+
+                <button id="prev" class="prev">이전</button>
+                <button id="next" class="next">다음</button>
+
+                <!-- 동그라미 버튼들 -->
+                <div class="dots-container">
+                    <span class="dot" th:each="i : ${#numbers.sequence(0, product_images.length - 1)}"></span>
+                </div>
+            </div>
+
+            <!-- 상품 정보 -->
+            <div class="product-info">
+                <!-- 상품명 + 찜 버튼 -->
+                <div class="product-header">
+                    <span class="product-name" th:text="${product.productName}"></span>
+                    <div class="product-like">
+                        <button class="wishlist-btn">🖤</button>
+                        <span class="product-like-count" th:text="${product.product_like}"></span>
+                    </div>
+                </div>
+                <hr>
+
+                <!-- 상품 설명 -->
+                <div class="product-description" th:text="${product.productContent}"></div>
+                <hr>
+
+                <!-- 상품 가격 -->
+                <div class="product-price" th:text="${#numbers.formatInteger(product.product_price, 3, 'COMMA') + ' 원'}"></div>
+                <hr>
+                <form action="/productBuy" method="post">
+                <!-- 수량 선택 -->
+                <div class="quantity-container">
+                    <!--      남은 재고 수량      -->
+                    <input type="hidden" id="stockCount" th:value="${product.product_pcs}">
+                    <!--      구매 하는 상품 번호  -->
+                    <input type="hidden" name="product_buy_productidx" th:value="${product.product_idx}" >
+                    <!-- 구매하는 상품 수량  -->
+                    <input type="hidden" name="quantity" id="quantityInput" value="0">
+                    <span>총 상품 금액(수량): </span>
+                    <span class="total-price">0</span> 원
+                    (<span class="quantity-count">0</span>개)
+                    <p class="min-order-text">(최소 주문 1개 이상)
+                        <!-- 재고가 5개 이하일 때만 표시 -->
+                        <span th:if="${product.product_pcs <= 5 and product.product_pcs > 0}"
+                              class="low-stock" style="color: red; font-weight: bold;">
+                            🚨 남은 재고: <span th:text="${product.product_pcs}"></span> 개
+                        </span>
+
+                        <!-- 재고가 0이면 '품절' 표시 -->
+                        <span th:if="${product.product_pcs == 0}" class="sold-out" style="color: gray; font-weight: bold;">
+                            ❌ 품절
+                        </span>
+                    </p>
+
+                    <div class="quantity-buttons">
+                        <button type="button" class="quantity-btn minus" onclick="updateQuantity(-1)">－</button>
+                        <span class="quantity">0</span> <!-- 초기값 1 -->
+                        <button type="button" class="quantity-btn plus" onclick="updateQuantity(1)">＋</button>
+                    </div>
+                </div>
+                <hr>
+
+                <!-- 장바구니 & 구매하기 -->
+                <div class="product-actions">
+                    <button type="submit" class="cart-btn" id="cartButton" name="action" data-action="cart" value="cart">장바구니</button>
+                    <button type="submit" class="buy-btn" id="buyButton" name="action" data-action="buy" value="buy">구매하기</button>
+                </div>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- 상세정보, 구매평, Q&A -->
+        <div class="product-tabs">
+            <button class="tab-link" onclick="scrollToSection('detail-section')">상세정보</button>
+            <button class="tab-link" onclick="scrollToSection('review-section')">구매평
+                <span class="totalElements" th:text="${reviews.totalElements}"></span>
+            </button>
+            <button class="tab-link" onclick="scrollToSection('qna-section')">Q&A
+                <span class="totalElements" th:text="${#lists.size(question_list)}"></span>
+            </button>
+        </div>
+
+        <div id="detail-section" class="product-section">
+            <h2>상세정보</h2>
+            <p>여기에 상품 상세 정보가 들어갑니다.</p>
+        </div>
+        <!-- 댓글 부분입니다.    -->
+        <div id="review-section" class="product-section">
+            <div class="review-head-menu">
+                <h2>구매평</h2>
+                <span class="review-totalElements" th:text="${reviews.totalElements}"></span>
+                <div class="review-sort">
+                    <select id="sort" name="sort" onchange="changeSort()" required="required">
+                        <option value="latest" th:selected="${sort == 'latest'}">최신 순</option>
+                        <option value="likest" th:selected="${sort == 'likest'}">찜하기 순</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="review-container" th:each="review : ${reviews}">
+                <div class="review-item">
+                    <div class="review-left">
+                        <img th:src="@{${'/profile-images/' + reviewUserImage[review.getReviewIdx]}}" alt="프로필 이미지" class="profile-img">
+                    </div>
+                    <div class="review-content">
+                        <div class="review-header">
+                            <div class="review-stars" th:switch="${#numbers.formatInteger(review.reviewScope, 0)}">
+                                <span th:case="1">⭐</span>
+                                <span th:case="2">⭐⭐</span>
+                                <span th:case="3">⭐⭐⭐</span>
+                                <span th:case="4">⭐⭐⭐⭐</span>
+                                <span th:case="5">⭐⭐⭐⭐⭐</span>
+                            </div>
+                            <div class="review-user-info">
+                                <span class="review-username" th:text="${reviewUserName[review.reviewIdx]}"></span> |
+                                <span class="review-date" th:text="${review.reviewAt}"></span> |
+                                <span class="review-option" th:text="${product.productName}"></span>
+                            </div>
+                        </div>
+                        <div class="review-text" th:text="${review.reviewContent}">
+                        </div>
+                    </div>
+                    <div th:if="${reviewimages.containsKey(review.reviewIdx) and reviewimages[review.reviewIdx].length > 0}">
+                        <img th:src="@{'/review-images/' + ${reviewimages[review.reviewIdx][0]}}"
+                             alt="리뷰 이미지"
+                             class="review-img"
+                             onclick="openModel()">
+                    </div>
+                    <div class="like-button review-wishlist-btn">
+                        <span>🖤</span> <!-- 기본적으로 찜하지 않은 상태 -->
+                        <input type="hidden" name="review_idx" th:value="${review.reviewIdx}">
+                        <span class="review-like-count" th:text="${review.reviewLike}"></span>
+                    </div>
+                </div>
+
+                <!-- 이미지 확대 -->
+                <div id="image-modal" class="modal"  th:if="${reviewimages.containsKey(review.reviewIdx)}">
+                    <div class="modal-inner">
+                        <span class="close" onclick="closeModel()" >&times;</span>
+                        <div class="modal-container-img">
+                            <img th:each="image : ${reviewimages[review.reviewIdx]}"
+                                 th:src="@{'/review-images/' + ${image}}"
+                                 alt="리뷰 이미지"
+                                 class="modal-content" id="modal-img">
+                        </div>
+                        <img id="review-prev" class="review-prev" th:src="@{/local-images/left-arrow.png}" alt="">
+                        <img id="review-next" class="review-next" th:src="@{/local-images/right-arrow.png}" alt="">
+                        <div class="review-dots">
+                            <span class="review-dot" th:each="i : ${#numbers.sequence(0, reviewimages[review.reviewIdx].length - 1)}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 리뷰가 없을 경우 메시지 표시 -->
+            <div th:if="${reviews.totalElements == 0}" class="no-reviews">
+                아직 리뷰가 존재하지 않습니다.
+            </div>
+
+            <div class="pagination" th:if="${reviews.totalPages > 0}">
+                <ul>
+                    <li th:each="i : ${#numbers.sequence(0, reviews.totalPages - 1)}">
+                        <a th:href="@{/productDetail/{product_idx}(product_idx=${product.product_idx}, page=${i}, sort=${sort})}"
+                           th:text="${i + 1}"
+                           th:classappend="${i == reviews.number ? 'active' : ''}"></a>
+                    </li>
+                </ul>
+            </div>
+            <!-- 댓글 페이지 네이션 부분 다음 및 전으로 가기 -->
+            <div class="review-page-left">
+                <li th:if="${reviews.hasPrevious()}">
+                    <a th:href="@{/productDetail/{product_idx}(product_idx=${product.product_idx}, page=${reviews.number - 1}, sort=${sort})}">
+                        <img th:src="@{/local-images/left.png}" alt="">
+                    </a>
+                </li>
+            </div>
+            <div class="review-page-right">
+                <li th:if="${reviews.hasNext()}">
+                    <a th:href="@{/productDetail/{product_idx}(product_idx=${product.product_idx}, page=${reviews.number + 1}, sort=${sort})}">
+                        <img th:src="@{/local-images/right.png}" alt="">
+                    </a>
+                </li>
+            </div>
+        </div>
+        <!-- 질문 등록하기 QnA-->
+        <div id="qna-section" class="product-section">
+            <div class="review-head-menu">
+                <h2>Q&A</h2>
+                <div class="review-sort">
+                    <button class="question-btn" id="toggle-qna">질문등록</button>
+                </div>
+            </div>
+            <!-- 질문 등록하기 QnA-->
+            <div class="qna-content">
+                <form th:action="@{/product_question}" method="post" th:object="${product_question}">
+                    <div class="question-regist">
+                        <span class="question-content">질문 : 내용</span>
+                        <input type="hidden" name="productQuestionProductidx" th:value="${product.product_idx}">
+                        <input type="text" th:field="*{productQuestionContent}">
+                        <button type="submit">작성완료</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="review-container">
+                <div class="question-list" th:each="question ,stauts : ${question_list}">
+                    <div class="question-item">
+                        <div class="question-list-top">
+                            <span class="question-content" th:text="${stauts.index + 1} + '.'"></span>
+                            <span class="question-content" th:text="'작성자 : [' + ${question_name[question.productQuestionIdx]} + ']'"></span>
+                            <button class="answer-regist answer-btn"
+                                    th:if="${product.product_user == userid and answer_list[question.productQuestionIdx] == '답변이 없습니다.'}">
+                                답변
+                            </button>
+
+                        </div>
+                        <div>
+                            <span class="question-content">질문 내용 : </span>
+                            <span class="question-content question-css" th:text="${question.productQuestionContent}"></span>
+                        </div>
+                    </div>
+                    <div class="answer">
+                        <form th:action="@{/product_answer}" method="post" th:object="${product_answer}" >
+                            <input type="hidden" name="productAnswerQuestionidx" th:value="${question.productQuestionIdx}">
+                            <input type="text" placeholder="admin만 작성가능" th:field="*{productAnswerContent}">
+                            <button type="submit">등록하기</button>
+                        </form>
+                    </div>
+                    <div class="answer-list" th:if="${answer_list[question.productQuestionIdx] != '답변이 없습니다.'}">
+                        <span>답변 : </span>
+                        <span th:text="${answer_list[question.productQuestionIdx]}"></span>
+                    </div>
+                </div>
+                <!-- QnA 없을 경우 메시지 표시 -->
+                <div th:if="${#lists.isEmpty(question_list)}" class="no-reviews">
+                    아직 상품 QnA 항목이 존재 하지 않습니다.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</th:block>
+</body>
+</html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const qnaContent = document.querySelector(".qna-content");
+        const toggleQnaBtn = document.getElementById("toggle-qna");
+        const answerButtons = document.querySelectorAll(".answer-regist");
+
+        // 질문등록 버튼 클릭 시 qna-content 표시/숨김
+        toggleQnaBtn.addEventListener("click", function () {
+            qnaContent.style.display = (qnaContent.style.display === "flex") ? "none" : "flex";
+        });
+
+        // 각 질문의 답변 버튼 클릭 시 해당 answer 영역 표시/숨김
+        answerButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const answerBox = this.closest(".question-list").querySelector(".answer");
+                answerBox.style.display = (answerBox.style.display === "flex") ? "none" : "flex";
+            });
+        });
+    });
+
+    // 상품 구매 및 장바구니 구현
+    document.querySelectorAll(".buy-btn").forEach(button => {
+        button.addEventListener("click", function (event) {
+            event.preventDefault(); // 기본 폼 제출 방지
+
+            const productIdx = document.querySelector("input[name='product_buy_productidx']").value;
+            const quantity = document.querySelector(".quantity").textContent;
+            const action = button.getAttribute("data-action"); // 버튼에 따라 action 값을 가져옴
+
+            fetch("/productBuy", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `product_buy_productidx=${productIdx}&quantity=${quantity}&action=${action}`
+            })
+                .then(response => {
+                    if (response.status === 401) { // 로그인이 필요한 경우
+                        alert("로그인이 필요합니다.");
+                        window.location.href = "/login"; // 로그인 페이지로 리다이렉트
+                        return;
+                    }
+                    return response.json();  // 응답을 JSON으로 처리
+                })
+                .then(data => {
+                    if (data) {
+                        alert(data.message);
+                        if (data.status === "success") {
+                            if (action === "cart") {
+                                // 장바구니 추가 후 처리
+                                window.location.href = "/cart"; // 장바구니 페이지로 리다이렉트
+                            } else if (action === "buy") {
+                                // 구매 완료 후 처리
+                                window.location.href = "/product_list"; // 상품 목록 페이지로 리다이렉트
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("오류가 발생했습니다. 다시 시도해주세요.");
+                });
+        });
+    });
+
+    let quantity = 0;
+    const pricePerItem = parseInt(document.querySelector('.product-price').textContent.replace(/[^0-9]/g, ''), 10);
+
+    // 품절되거나 수량을 나타내는 JS
+    function updateQuantity(change) {
+        // maxStock = 재고 수량 저장
+        const maxStock = parseInt(document.getElementById("stockCount").value, 10); // 현재 재고 수량 가져오기
+        quantity = Math.max(0, quantity + change); // 최소 0개 유지
+
+        const cartBtn = document.querySelector("#cartButton");
+        const buyBtn = document.querySelector("#buyButton");
+
+        // 품절 상태면 수량 변경 불가능
+        if (maxStock === 0) {
+            alert("❌ 품절된 상품입니다.");
+
+            // 장바구니 버튼 비활성화하고 회색으로 변경
+            cartBtn.disabled = true;  // 클릭 불가능하게 만들기
+            cartBtn.style.backgroundColor = "#d3d3d3"; // 회색으로 변경
+            cartBtn.style.cursor = "not-allowed"; // 커서 변경
+
+            // 구매하기 버튼 비활성화하고 회색으로 변경
+            buyBtn.disabled = true; // 구매하기 버튼 비활성화
+            buyBtn.style.backgroundColor = "#d3d3d3"; // 회색으로 변경
+            buyBtn.style.cursor = "not-allowed"; // 커서 변경
+
+            return;
+        } else {
+            // 재고가 있으면 버튼을 활성화하고 기본 색상 복원
+            cartBtn.disabled = false;  // 클릭 가능하게 만들기
+            cartBtn.style.backgroundColor = "#3498db"; // 기본 배경색으로 변경
+            cartBtn.style.cursor = "pointer"; // 커서 변경
+
+            buyBtn.disabled = false; // 구매하기 버튼 활성화
+            buyBtn.style.backgroundColor = "#2ecc71"; // 기본 배경색으로 변경
+            buyBtn.style.cursor = "pointer"; // 커서 변경
+        }
+
+        // 재고보다 많이 선택하면 경고 후 변경 안 함
+        if (quantity > maxStock) {
+            alert(`🚨 최대 ${maxStock}개까지만 구매할 수 있습니다.`);
+            quantity = maxStock; // 최대 수량으로 조정
+        }
+
+        // 화면 업데이트
+        document.querySelector('.quantity').textContent = quantity;
+        document.querySelector('.quantity-count').textContent = quantity;
+        document.querySelector('.total-price').textContent = (pricePerItem * quantity).toLocaleString();
+        document.getElementById('quantityInput').value = quantity;
+    }
+
+    // 상품 상세 정보 찜하기 API
+    document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.querySelector(".wishlist-btn");
+        const productIdx = document.querySelector("input[name='product_buy_productidx']").value;
+        const likeCountSpan = document.querySelector(".product-like-count"); // 좋아요 개수 표시하는 요소
+
+        // 페이지 로드 시 찜 상태 확인 (GET 요청)
+        fetch(`/product/like-status/${productIdx}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "liked") {
+                    btn.textContent = "❤️"; // 찜 상태인 경우
+                    likeCountSpan.textContent = data.likeCount; // 좋아요 개수 업데이트
+                } else if (data.status === "not_liked") {
+                    btn.textContent = "🖤"; // 찜 상태가 아닌 경우
+                    likeCountSpan.textContent = data.likeCount; // 좋아요 개수 업데이트
+                }
+            })
+            .catch(error => console.error("Error:", error));
+
+        // 찜 버튼 클릭 시 토글 (POST 요청)
+        btn.addEventListener("click", function () {
+            fetch(`/product/like/${productIdx}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "added") {
+                        btn.textContent = "❤️"; // 찜 추가된 경우
+                        likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1; // 숫자 즉시 증가
+                    } else if (data.status === "removed") {
+                        btn.textContent = "🖤"; // 찜 취소된 경우
+                        likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1; // 숫자 즉시 감소
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        });
+    });
+
+
+    // 이미지 슬라이드
+    const prevButton = document.getElementById('prev');
+    const nextButton = document.getElementById('next');
+    const slider = document.querySelector('.slider');
+    const dots = document.querySelectorAll('.dot');
+    let currentIndex = 0;
+    const images = slider.querySelectorAll('img');
+    const totalImages = images.length;
+
+    // 동그라미 버튼 활성화 함수
+    function updateDots() {
+        dots.forEach((dot, index) => {
+            dot.classList.remove('active');
+            if (index === currentIndex) {
+                dot.classList.add('active');
+            }
+        });
+    }
+
+    // 이전 버튼 클릭 시
+    prevButton.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            slider.style.transform = `translateX(-${currentIndex * 400}px)`;
+            updateDots();
+        }
+    });
+
+    // 다음 버튼 클릭 시
+    nextButton.addEventListener('click', () => {
+        if (currentIndex < totalImages - 1) {
+            currentIndex++;
+            slider.style.transform = `translateX(-${currentIndex * 400}px)`;
+            updateDots();
+        }
+    });
+
+    // 동그라미 버튼 클릭 시
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            currentIndex = index;
+            slider.style.transform = `translateX(-${currentIndex * 400}px)`;
+            updateDots();
+        });
+    });
+
+    // 초기 동그라미 활성화
+    updateDots();
+
+
+    // 페이지 로드 시 초기 상태 설정
+    document.addEventListener("DOMContentLoaded", function() {
+        updateQuantity(0); // 초기 상태 업데이트
+    });
+
+    // 상세 정보 , 구매평 ,Qna로 천천히 이동
+    function scrollToSection(sectionId) {
+        document.getElementById(sectionId).scrollIntoView({ behavior: "smooth" });
+    }
+    <!-- 여기 까지 상품 디테일 에 관한 js -->
+
+    // -------------------------------------------------------------- //
+
+    <!-- 여기 이후는 상품에 대한 리뷰  js -->
+    const reviewPrev = document.getElementById("review-prev");
+    const reviewNext = document.getElementById("review-next");
+    const reviewSlider = document.querySelector(".modal-container-img");
+    const reviewImages = reviewSlider.querySelectorAll("img");  // 여러 이미지를 선택
+    const reviewDots = document.querySelectorAll(".review-dot");
+    let reviewCurrentIndex = 0;
+    const reviewLength = reviewImages.length;
+
+    function updateReDots(){
+        reviewDots.forEach((dot,index) => {
+            dot.classList.remove('active');
+           if(index === reviewCurrentIndex){
+               dot.classList.add("active");
+           }
+        });
+    }
+
+    reviewPrev.addEventListener('click', () => {
+        if(reviewCurrentIndex > 0){  // 처음으로 돌아가지 않도록 조건 변경
+            reviewCurrentIndex--;
+            reviewSlider.style.transform = `translateX(-${reviewCurrentIndex * 400}px)`;  // 백틱(`) 사용
+            updateReDots();
+        }
+    });
+
+    reviewNext.addEventListener('click', () => {
+        if(reviewCurrentIndex < reviewLength - 1){  // 끝까지 가지 않도록 조건 변경
+            reviewCurrentIndex++;
+            reviewSlider.style.transform = `translateX(-${reviewCurrentIndex * 400}px)`;  // 백틱(`) 사용
+            updateReDots();
+        }
+    });
+
+    // 동그라미 버튼 클릭 시
+    reviewDots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            reviewCurrentIndex = index;
+            reviewSlider.style.transform = `translateX(-${reviewCurrentIndex * 400}px)`;
+            updateReDots();
+        });
+    });
+
+    // 페이지 로드 시 초기 활성화 상태 업데이트
+    updateReDots();
+
+    // 클릭시 이미지 확대
+    function openModel() {
+        document.getElementById('image-modal').style.display = "flex";
+
+    }
+
+    // 이미지 닫기
+    function closeModel() {
+        document.getElementById('image-modal').style.display = "none";
+    }
+
+    // ESC 키 눌렀을 때 닫기
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeModel();
+        }
+    });
+
+
+    // 상품 댓글 좋아요 API
+    document.addEventListener("DOMContentLoaded", function () {
+        const btns = document.querySelectorAll(".review-wishlist-btn");
+
+        btns.forEach(btn => {
+            const reviewproductIdx = btn.querySelector("input[name='review_idx']").value;
+            const heartIcon = btn.querySelector("span"); // ❤️ 또는 🖤 아이콘을 변경할 요소
+            const likeCountSpan = btn.querySelector(".review-like-count"); // 좋아요 개수 표시하는 요소
+
+            // 개별 리뷰의 찜 상태 및 개수 확인 (GET 요청)
+            fetch(`/review/like-status/${reviewproductIdx}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    heartIcon.textContent = data.status === "liked" ? "❤️" : "🖤";
+                    likeCountSpan.textContent = data.likeCount; // 좋아요 개수 업데이트
+                })
+                .catch(error => console.error("Error:", error));
+
+            // 개별 찜 버튼 클릭 이벤트 추가
+            btn.addEventListener("click", function () {
+                fetch(`/review/like/${reviewproductIdx}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include"
+                })
+                    .then(response => {
+                        if (response.status === 401) {
+                            alert("로그인해주시기 바랍니다.");
+                            window.location.href = "/login";
+                            return;
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === "added") {
+                            heartIcon.textContent = "❤️"; // 찜 추가됨
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1; // 숫자 즉시 증가
+                        } else if (data.status === "removed") {
+                            heartIcon.textContent = "🖤"; // 찜 취소됨
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1; // 숫자 즉시 감소
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+
+
+    // 정렬 기능
+    // 상품 댓글 선택한 값 URL로 보내기
+    function changeSort() {
+        let selectedSort = document.getElementById("sort").value;
+        let currentUrl = new URL(window.location.href);
+
+        currentUrl.searchParams.set("sort", selectedSort);  // sort 파라미터 추가 또는 변경
+        currentUrl.searchParams.set("page", 0); // 정렬 변경 시 첫 페이지로 이동
+
+
+        window.location.href = currentUrl.toString(); // 새 URL로 이동
+
+    }
+
+    // 페이지 로드 시 저장된 정렬 값 적용
+    document.addEventListener("DOMContentLoaded", function () {
+        const sortSelect = document.getElementById("sort");
+
+        // URL에서 검색어(search)와 정렬값(sort)을 가져옴
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSort = urlParams.get("sort"); // URL에서 sort 값 가져오기
+
+
+        // URL에서 sort 값이 있으면 드롭다운에 설정하고, 없으면 기본값 설정
+        if (urlSort) {
+            sortSelect.value = urlSort;
+        } else {
+            sortSelect.value = "latest"; // 기본값 설정
+        }
+    });
+
+</script>

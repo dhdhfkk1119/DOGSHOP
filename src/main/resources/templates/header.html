@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Header</title>
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery 추가 -->
+</head>
+<body>
+<header class="header">
+    <div class="container-header">
+        <div class="logo">
+            <a href="/">JJW</a>
+        </div>
+        <nav class="nav-links">
+            <span>
+                <a sec:authorize="isAuthenticated()"  href="/user_like">❤️</a>
+                <a href="/product_list">상품 목록</a>
+                <a href="/cart">장바 구니</a>
+            </span>
+            <span th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                <a href="/admin">관리자 페이지</a>
+            </span>
+            <span th:if="${#authorization.expression('isAuthenticated()')}">
+                <a sec:authorize="isAuthenticated()" th:text="${name}" href="/mypage"></a>
+                <a sec:authorize="isAuthenticated()"  th:if="${role == 'ROLE_ADMIN'}" href="/product">상품 등록</a>
+                <a sec:authorize="isAuthenticated()" href="/logout">로그아웃</a>
+            </span>
+            <span th:if="${#authorization.expression('isAnonymous()')}">
+                <a sec:authorize="isAnonymous()" href="/login">로그인</a>
+                <a href="/sign">회원가입</a>
+            </span>
+                </nav>
+
+    </div>
+</header>
+</body>
+</html>

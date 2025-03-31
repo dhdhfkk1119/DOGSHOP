@@ -1,0 +1,201 @@
+.container-product {
+    width: 40%;
+    margin: auto;
+    padding: 20px 20px 60px 20px;
+    margin-top: 100px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+#product_images {
+    margin-top: 15px;
+}
+
+.product-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.product-image-preview {
+    flex: 2;
+    text-align: center;
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+
+.placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    color: #aaa;
+    font-size: 16px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.image-slider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    height: 400px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 10px;
+}
+
+.image-slider .slider-wrapper {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.image-slider img {
+    width: 400px;
+    height: 400px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border-radius: 10px;
+}
+
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 7px 10px 7px 10px;
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 50%;
+    z-index: 10;
+}
+.prev-btn {
+    left: 10px;
+}
+
+.next-btn {
+    right: 10px;
+}
+
+.product-form {
+    flex: 2;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+#product_user {
+    padding-left: 8px;
+}
+#product_content{
+    padding-left: 8px;
+}
+.product-submit {
+    width: 100%;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.product-submit:hover {
+    background-color: black;
+}
+
+/* 상품 정보 */
+.product-info {
+    display: flex;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #f5f5f5; /* 연한 회색 배경 */
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.review-info {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+.review-image {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.review-image img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.product-name {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.product-quantity,
+.total-price {
+    font-size: 14px;
+    color: #555;
+}
+
+/* 팁 영역 */
+.tip {
+    background-color: #f9f9c5; /* 연한 노란색 배경 */
+    border: 1px dashed #ccc;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* 별점 기능 */
+.rating {
+    display: flex;
+    justify-content: flex-start;
+    gap: 5px;
+}
+
+.rating input[type="radio"] {
+    display: none;
+}
+
+.rating label {
+    font-size: 30px;
+    cursor: pointer;
+    color: #ccc;
+}
+
+.rating input[type="radio"]:checked ~ label {
+    color: #f39c12; /* 선택된 별은 노란색 */
+}
+
+.rating input[type="radio"]:hover ~ label {
+    color: #f39c12;
+}

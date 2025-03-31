@@ -1,0 +1,242 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    display: flex;
+    justify-content: center;
+}
+
+.cart-container {
+    width: 50%;
+    background-color: white;
+    padding: 20px;
+    margin: 100px auto 20px auto;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.delete-selected {
+    padding: 10px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.item-select {
+    margin-right: 10px;
+}
+
+.item-image {
+    width: 70px;
+    height: 70px;
+    margin-right: 20px;
+    border-radius: 10px;
+}
+
+.item-name {
+    flex: 1;
+    font-weight: 700;
+}
+
+.separator {
+    margin: 0 5px;
+    font-size: 12px;
+}
+
+.item-quantity,
+.item-price {
+    margin: 0 10px;
+}
+
+.item-option,
+.item-delete {
+    padding: 5px 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+    border-radius: 10px;
+}
+
+.item-option:hover,
+.item-delete:hover {
+    background-color: #2980b9;
+}
+
+.DeleteBut button{
+    border-radius: 10px;
+}
+.DeleteBut button:hover{
+    background-color: darkred;
+}
+.total {
+    position: relative;
+}
+.total-price {
+    text-align: right;
+    padding: 10px 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+.total-buy-bth {
+    margin: 10px 0;
+}
+.total-buy-bth button{
+    width: 100%;
+    height: 50px;
+    background: #333;
+    border-radius: 10px;
+    color:white;
+    font-weight: 700;
+    font-size: 16px;
+    border: 0;
+}
+
+
+/* 팝업 CSS */
+
+/* 팝업 기본 스타일 */
+/* 전체 배경과 팝업 */
+.option-popup {
+    position: fixed;
+    bottom: -100%; /* 처음에는 화면 밖에 위치 */
+    left: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: bottom 0.5s ease-in-out; /* 애니메이션 */
+    height: 100%;
+}
+
+.popup-content {
+    background-color: white;
+    padding: 20px;
+    width: 50%;
+    text-align: center;
+    border-radius: 10px 10px 0 0;
+    position: absolute;
+    bottom:0;
+
+}
+
+.popup-order {
+    background-color: #cdc7c7;
+    border-radius: 4px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.popup-order .order-info {
+
+    justify-content: space-between;
+    width: 100%;
+}
+.order-info {
+    text-align: right;
+}
+.popup-order .total-price {
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+.quantity-change {
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    align-items: center;
+    width: 98px;
+    height: 28px;
+}
+
+.quantity-change button {
+    background-color: #efeaea;
+    border: 1px solid #d3d3d3;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    height: 100%;
+    padding: 6px;
+    display: inline-flex;
+    overflow: hidden;
+}
+.quantity-plus {
+    border-radius: 4px 0 0 4px;
+}
+.quantity-mins{
+    border-radius: 0 4px 4px 0;
+}
+.quantity-change input {
+    text-align: center;
+    border:0;
+    border-top:1px solid #d3d3d3;
+    border-bottom:1px solid #d3d3d3;
+
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 14px;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.popup-order-btn {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.closeBtn, .updateBtn {
+    padding: 12px 16px;
+    height: 44px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    display: inline-flex;
+
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+}
+
+.closeBtn {
+    background: white;
+    border: 1px solid black;
+    border-radius: 4px;
+    color: black;
+    cursor: pointer;
+}
+
+.updateBtn {
+    margin-left: 8px;
+    border: 0;
+    border-radius: 4px;
+    color: white;
+}
+
+
+
+

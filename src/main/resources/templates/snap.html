@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <th:block th:fragment="css">
+    <link rel="stylesheet" th:href="@{/css/snap.css}">
+  </th:block>
+</head>
+<body>
+<th:block th:fragment="content">
+  <!-- 스냅 페이지 -->
+    <div class="snap-container">
+        <div class="profile-info">
+          <!-- 프로필 이미지 및 정보 -->
+            <div class="profile-image">
+                <img th:src="@{${'/profile-images/' + UserImage}}" alt="Profile Image" id="snapProfileImage">
+                <div class="user-name">
+                  <span id="userName" th:text="${name}"></span>
+                </div>
+                <div class="user-creation-date">
+                  <span id="userCreationDate" th:text="${#temporals.format(CreatAt, 'yyyy-MM-dd')}"></span>
+                </div>
+            </div>
+            <div class="profile-details">
+                <div class="review-count">
+                    <div class="review-size">
+                        <span id="reviewCount" th:text="${#lists.size(reviewList)}">0</span>
+                        <span>리뷰</span>
+                    </div>
+                    <div class="answer-size">
+                        <span id="reviewCount" th:text="${#lists.size(questions)}">0</span>
+                        <span>QnA</span>
+                    </div>
+                </div>
+
+                <!-- 프로필 변경 버튼 -->
+                <div class="profile-buttons">
+                  <button id="changeProfileImageBtn" onclick="openImageChangeModal()">이미지 변경</button>
+                  <button id="changeNameBtn" onclick="openNameChangeModal()">이름 변경</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 리뷰 섹션 -->
+        <div class="review-section review">
+            <h3 class="select-section">
+                <button class="section-btn">내가 쓴 리뷰</button>
+                <button class="section-btn">내가 쓴 QnA</button>
+            </h3>
+            <div id="reviewList" class="review-container review" th:each="review : ${reviewList}">
+                <div class="review-item">
+                    <div class="review-left">
+                        <div th:if="${reviewimages.containsKey(review.reviewIdx) and reviewimages[review.reviewIdx].length > 0}">
+                            <img th:src="@{'/review-images/' + ${reviewimages[review.reviewIdx][0]}}"
+                                 alt="리뷰 이미지"
+                                 class="review-img"
+                                 onclick="openModel(this.src)">
+                        </div>
+                    </div>
+                    <div class="review-content">
+                        <div class="review-header">
+                            <div class="review-stars" th:switch="${#numbers.formatInteger(review.reviewScope, 0)}">
+                                <span th:case="1">⭐</span>
+                                <span th:case="2">⭐⭐</span>
+                                <span th:case="3">⭐⭐⭐</span>
+                                <span th:case="4">⭐⭐⭐⭐</span>
+                                <span th:case="5">⭐⭐⭐⭐⭐</span>
+                            </div>
+                            <div class="review-user-info">
+                                <span class="review-username" th:text="${review.reviewUser}"></span> |
+                                <span class="review-date" th:text="${#temporals.format(review.reviewAt,'YYYY.MM.dd')}"></span> |
+                                <span class="review-option" th:text="${name}"></span>
+                            </div>
+                        </div>
+                        <div class="review-text" th:text="${review.reviewContent}">
+                        </div>
+                    </div>
+                    <div class="like-button review-wishlist-btn">
+                        <span>🖤</span> <!-- 기본적으로 찜하지 않은 상태 -->
+                        <input type="hidden" name="review_idx" th:value="${review.reviewIdx}">
+                        <span class="review-like-count" th:text="${review.reviewLike}"></span>
+                    </div>
+                </div>
+
+                <!-- 이미지 확대 -->
+                <div id="image-modal" class="modal"  th:if="${reviewimages.containsKey(review.reviewIdx)}">
+                    <div class="modal-inner">
+                        <span class="close" onclick="closeModel()" >&times;</span>
+                        <div class="modal-container-img">
+                            <img th:each="image : ${reviewimages[review.reviewIdx]}"
+                                 th:src="@{'/review-images/' + ${image}}"
+                                 alt="리뷰 이미지"
+                                 class="modal-content" id="modal-img">
+                        </div>
+                        <img id="review-prev" class="review-prev" th:src="@{/local-images/left-arrow.png}" alt="">
+                        <img id="review-next" class="review-next" th:src="@{/local-images/right-arrow.png}" alt="">
+                        <div class="review-dots">
+                            <span class="review-dot" th:each="i : ${#numbers.sequence(0, reviewimages[review.reviewIdx].length - 1)}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!--   자신이 작성한 QnA 정보 가져오기            -->
+            <div id="reviewList" class="review-container QnA" th:each="question : ${questions}">
+                <div class="review-item answer-item">
+                    <div class="review-left">
+                        <div>
+                            <a th:href="@{|/productDetail/${question.getProductQuestionProductidx()}|}">
+                                <img class="review-img"
+                                     th:src="@{'/product-images/' + ${questionProductMap[question.productQuestionIdx][1]}}"
+                                     alt="상품 이미지">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="review-content">
+                        <div class="review-header">
+                            <div class="review-user-info">
+                                <span class="review-username" th:text="'[' + ${questionProductMap[question.productQuestionIdx][0]} + ']'"></span> |
+                                <span class="review-date" th:text="${#temporals.format(question.productQuestionAt,'YYYY.MM.dd')}"></span> |
+                                <span class="review-option" th:text="${name}"></span>
+                            </div>
+                        </div>
+                        <div class="review-text" th:text="${'질문 : ' + question.productQuestionContent}">
+                        </div>
+                        <div class="answer-text" th:text="${'답변 : ' + QuestionAnswerMap[question.getProductQuestionIdx()]}">
+                        </div>
+                    </div>
+                    <div class="answer-btn">
+                        <span>답변</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- snap 에서 question 정보 보여주기       -->
+
+        <!-- 프로필 이미지 변경 모달 -->
+        <div id="imageChangeModal" class="update-modal">
+            <div class="popup-modal-content">
+                <span class="update-close" onclick="closeImageChangeModal()">&times;</span>
+                <h2>이미지 변경</h2>
+                <input type="file" id="newProfileImage" accept="image/*">
+                <button class="update-btn" onclick="changeProfileImage()">변경하기</button>
+            </div>
+        </div>
+
+            <!-- 이름 변경 모달 -->
+        <div id="nameChangeModal" class="update-modal">
+            <div class="popup-modal-content">
+                <span class="update-close" onclick="closeNameChangeModal()">&times;</span>
+                <input type="hidden" id="originalName">
+                <h2>이름 변경</h2>
+                <form id="profileImageForm" enctype="multipart/form-data">
+                    <input type="text" id="newUserName" name="userImage" placeholder="새로운 이름을 입력하세요">
+                    <button class="update-btn" onclick="changeUserName()">변경하기</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+</th:block>
+</body>
+</html>
+<script>
+
+    // 답변 버튼 클릭시 답변 보여주기
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".answer-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                const answerText = this.closest(".answer-item").querySelector(".answer-text");
+
+                if (answerText.style.maxHeight && answerText.style.maxHeight !== "0px") {
+                    // 닫기 애니메이션
+                    answerText.style.maxHeight = "0";
+                    answerText.style.padding = "0";
+                    answerText.style.opacity = "0";
+                    setTimeout(() => {
+                        answerText.style.display = "none"; // 애니메이션 종료 후 숨김
+                    }, 400); // CSS transition 시간과 맞춤
+                } else {
+                    // 먼저 display를 block으로 변경
+                    answerText.style.display = "block";
+
+                    // 약간의 시간 차이를 둬서 브라우저가 스타일을 반영할 수 있도록 함
+                    setTimeout(() => {
+                        answerText.style.maxHeight = answerText.scrollHeight + "px";
+                        answerText.style.padding = "10px 0";
+                        answerText.style.opacity = "1";
+                    }, 10); // 10ms 정도 딜레이를 줘서 반영되도록 함
+                }
+            });
+        });
+    });
+
+
+
+    <!-- 섹션 버튼에 따라 보여주는거 다르게 보여주기  -->
+    document.addEventListener("DOMContentLoaded", function () {
+        const reviewBtn = document.querySelector(".section-btn:nth-child(1)"); // 내가 쓴 리뷰 버튼
+        const qnaBtn = document.querySelector(".section-btn:nth-child(2)"); // 내가 쓴 QnA 버튼
+        const reviewSections = document.querySelectorAll(".review-container.review"); // 리뷰 리스트
+        const qnaSections = document.querySelectorAll(".review-container.QnA"); // QnA 리스트
+
+        function showReviews() {
+            reviewSections.forEach(section => section.style.display = "block");
+            qnaSections.forEach(section => section.style.display = "none");
+            setActiveButton(reviewBtn);
+        }
+
+        function showQnAs() {
+            reviewSections.forEach(section => section.style.display = "none");
+            qnaSections.forEach(section => section.style.display = "block");
+            setActiveButton(qnaBtn);
+        }
+
+        function setActiveButton(activeBtn) {
+            document.querySelectorAll(".section-btn").forEach(btn => btn.classList.remove("active"));
+            activeBtn.classList.add("active");
+        }
+
+        // 초기 상태: 리뷰 버튼 활성화
+        showReviews();
+
+        reviewBtn.addEventListener("click", showReviews);
+        qnaBtn.addEventListener("click", showQnAs);
+    });
+
+
+
+
+    // 프로필 이미지 변경 모달 열기
+  function openImageChangeModal() {
+    document.getElementById("imageChangeModal").style.display = "flex";
+  }
+
+  // 프로필 이미지 변경 모달 닫기
+  function closeImageChangeModal() {
+    document.getElementById("imageChangeModal").style.display = "none";
+  }
+
+  // 이름 변경 모달 열기
+  function openNameChangeModal() {
+    document.getElementById("nameChangeModal").style.display = "flex";
+  }
+
+  // 이름 변경 모달 닫기
+  function closeNameChangeModal() {
+    document.getElementById("nameChangeModal").style.display = "none";
+  }
+
+  // 이름 변경
+  function changeUserName() {
+      var rename = document.getElementById('newUserName').value;
+
+      fetch("/snap/rename", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+              rename: rename
+          })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.status === "success") {
+              alert(data.message);
+              location.reload(); // 구매 후 페이지 새로고침 (장바구니 내용 갱신)
+          } else {
+              alert("구매 실패: " + data.message);
+          }
+      })
+      .catch(error => console.error("Error:", error));
+
+    closeNameChangeModal();
+  }
+
+  // 프로필 이미지 변경
+  function changeProfileImage(){
+      var fileInput = document.getElementById('newProfileImage');
+      var file = fileInput.files[0]; // 선택한 파일 가져오기
+
+      if (!file) {
+          alert("이미지를 선택해주세요.");
+          return;
+      }
+
+      var formData = new FormData();
+      formData.append("file", file); // 파일 데이터 추가
+
+      fetch("/snap/newProfileImage", {
+          method: "POST",
+          body: formData // FormData 전송 (Content-Type 자동 설정됨)
+      })
+          .then(response => response.json())
+          .then(data => {
+              if (data.status === "success") {
+                  alert(data.message);
+                  location.reload(); // 성공 시 페이지 새로고침
+              } else {
+                  alert("이미지 변경 실패: " + data.message);
+              }
+          })
+          .catch(error => console.error("Error:", error));
+  }
+
+  // 클릭시 이미지 확대
+  function openModel(src) {
+      document.getElementById('image-modal').style.display = "flex";
+      document.getElementById('modal-img').src = src;
+  }
+
+
+  // 이미지 닫기
+  function closeModel() {
+      document.getElementById('image-modal').style.display = "none";
+  }
+
+  // ESC 키 눌렀을 때 닫기
+  document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+          closeModel();
+      }
+  });
+
+  // 상품 댓글 좋아요 API
+  document.addEventListener("DOMContentLoaded", function () {
+      const btns = document.querySelectorAll(".review-wishlist-btn");
+
+      btns.forEach(btn => {
+          const reviewproductIdx = btn.querySelector("input[name='review_idx']").value;
+          const heartIcon = btn.querySelector("span"); // ❤️ 또는 🖤 아이콘을 변경할 요소
+          const likeCountSpan = btn.querySelector(".review-like-count"); // 좋아요 개수 표시하는 요소
+
+          // 개별 리뷰의 찜 상태 및 개수 확인 (GET 요청)
+          fetch(`/review/like-status/${reviewproductIdx}`, {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include"
+          })
+              .then(response => response.json())
+              .then(data => {
+                  heartIcon.textContent = data.status === "liked" ? "❤️" : "🖤";
+                  likeCountSpan.textContent = data.likeCount; // 좋아요 개수 업데이트
+              })
+              .catch(error => console.error("Error:", error));
+
+          // 개별 찜 버튼 클릭 이벤트 추가
+          btn.addEventListener("click", function () {
+              fetch(`/review/like/${reviewproductIdx}`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include"
+              })
+                  .then(response => {
+                      if (response.status === 401) {
+                          alert("로그인해주시기 바랍니다.");
+                          window.location.href = "/login";
+                          return;
+                      }
+                      return response.json();
+                  })
+                  .then(data => {
+                      if (data.status === "added") {
+                          heartIcon.textContent = "❤️"; // 찜 추가됨
+                          likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1; // 숫자 즉시 증가
+                      } else if (data.status === "removed") {
+                          heartIcon.textContent = "🖤"; // 찜 취소됨
+                          likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1; // 숫자 즉시 감소
+                      }
+                  })
+                  .catch(error => console.error("Error:", error));
+          });
+      });
+  });
+
+  const reviewPrev = document.getElementById("review-prev");
+  const reviewNext = document.getElementById("review-next");
+  const reviewSlider = document.querySelector(".modal-container-img");
+  const reviewImages = reviewSlider.querySelectorAll("img");  // 여러 이미지를 선택
+  const reviewDots = document.querySelectorAll(".review-dot");
+  let reviewCurrentIndex = 0;
+  const reviewLength = reviewImages.length;
+
+  function updateReDots(){
+      reviewDots.forEach((dot,index) => {
+          dot.classList.remove('active');
+          if(index === reviewCurrentIndex){
+              dot.classList.add("active");
+          }
+      });
+  }
+
+  reviewPrev.addEventListener('click', () => {
+      if(reviewCurrentIndex > 0){  // 처음으로 돌아가지 않도록 조건 변경
+          reviewCurrentIndex--;
+          reviewSlider.style.transform = `translateX(-${reviewCurrentIndex * 400}px)`;  // 백틱(`) 사용
+          updateReDots();
+      }
+  });
+
+  reviewNext.addEventListener('click', () => {
+      if(reviewCurrentIndex < reviewLength - 1){  // 끝까지 가지 않도록 조건 변경
+          reviewCurrentIndex++;
+          reviewSlider.style.transform = `translateX(-${reviewCurrentIndex * 400}px)`;  // 백틱(`) 사용
+          updateReDots();
+      }
+  });
+
+  // 동그라미 버튼 클릭 시
+  reviewDots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+          reviewCurrentIndex = index;
+          reviewSlider.style.transform = `translateX(-${reviewCurrentIndex * 400}px)`;
+          updateReDots();
+      });
+  });
+
+  // 페이지 로드 시 초기 활성화 상태 업데이트
+  updateReDots();
+
+</script>

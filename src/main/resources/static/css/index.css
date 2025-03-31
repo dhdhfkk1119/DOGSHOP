@@ -1,0 +1,61 @@
+* ,body {
+    margin: 0;
+    padding: 0;
+}
+.index-container {
+    width: 80%;
+    margin: 100px auto 20px auto;
+}
+.h2-context{
+    margin: 20px 0 10px 0;
+}
+.swiper {
+    width: 100%;
+    overflow: hidden;
+}
+
+.swiper-wrapper {
+    display: flex;
+}
+
+.product-item {
+    width: calc(100% / 5 - 20px); /* 한 줄에 5개 */
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-sizing: border-box;
+    padding: 15px;
+    background-color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.product-image img {
+    width: 100%;
+    height: 250px;
+    border-radius: 5px;
+    transition: transform 0.3s ease;
+}
+
+.product-item:hover .product-image img {
+    transform: scale(1.1);
+}
+
+.product-name, .product-price {
+    text-align: left;
+}
+
+.product-name p, .product-price p {
+    margin: 5px 0;
+    font-size: 16px;
+    font-weight: 800;
+}
+.product-info {
+    border-bottom: 1px solid #5e5d5d;
+    padding: 5px 0;
+    display: flex;
+}
+.product-info span {
+    flex: 1;
+    width: 25%;
+}
+
+

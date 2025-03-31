@@ -1,0 +1,149 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.profile-container {
+    position: relative;
+    width: 40%;
+    margin: 100px auto 20px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.profile-warp {
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.profile .user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile .user-info .role {
+    font-size: 14px;
+    color: #777;
+}
+.role {
+    font-size: 12px;
+}
+.profile .user-info .username {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.profile {
+    font-size: 14px;
+    color: #373839;
+    cursor: pointer;
+}
+
+.change-profile {
+    color: #373839;
+    cursor: pointer;
+    position: absolute;
+    text-align: right;
+    right: 40px;
+    font-size: 12px;
+    border-radius: 4px;
+    padding: 5px;
+    margin-top: 6px;
+    border: 1px solid #857f7f;
+}
+
+.change-profile a {
+    background: #f5f5f5;
+    color: black;
+    cursor: pointer;
+    text-decoration: none;
+}
+.change-profile a:hover {
+    border-bottom: 1px solid black;
+}
+
+.section {
+    display: grid;
+    margin: 20px 0;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.total-price {
+    font-size: 16px;
+    color: #857f7f;
+}
+.total-border {
+    background: black;
+    color: white; /* 글자 색상 */
+    padding: 10px;
+    width: 5px; /* 고정된 크기 */
+    height: 5px; /* 가로 세로 같게 */
+    border-radius: 50%; /* 원형으로 만들기 */
+    display: flex; /* 내부 요소 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    font-weight: bold; /* 글자 강조 */
+    font-size: 14px; /* 글자 크기 */
+}
+.total-info {
+    display: flex; /* 가로 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    gap: 10px; /* 간격 조절 */
+    margin-top: 5px;
+}
+.total-price{
+    font-weight: bold; /* 글자 강조 */
+    font-size: 20px; /* 글자 크기 */
+    color: black;
+}
+.link {
+    display: inline-block;
+    margin-top: 7px;
+    font-size: 16px;
+    color: #49494a;
+    cursor: pointer;
+}
+.link a{
+    color:#49494a;
+    text-decoration: none;
+}
+
+/* 주문 내역 섹션 스타일 */
+.order-history {
+    background-color: #f9f9f9; /* 연한 회색 배경 */
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* QnA 내역 섹션 스타일 */
+.qna-history {
+    background-color: #f9f9f9; /* 연한 회색 배경 */
+    padding: 10px;
+    border-radius: 5px;
+}

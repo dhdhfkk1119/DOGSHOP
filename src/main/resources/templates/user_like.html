@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <th:block th:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/user_like.css}">
+    </th:block>
+</head>
+<body>
+<th:block th:fragment="content">
+    <div class="user-like-container">
+        <div class="product-list-head">
+            <div class="product-font list-head">
+                <h2 class="product-h2">상품 목록</h2>
+            </div>
+            <div class="product-list-right">
+                <div class="sortAll list-head">
+                    <select id="sort" name="sort" onchange="changeSort()" required="required">
+                        <option value="latest" th:selected="${sort == 'latest'}">최신 순</option>
+                        <option value="comentst" th:selected="${sort == 'comentst'}">댓글 순</option>
+                        <option value="cheapst" th:selected="${sort == 'cheapst'}">제일 낮은 가격</option>
+                        <option value="expensivest" th:selected="${sort == 'expensivest'}">제일 비싼 가격</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="product-list">
+            <div th:each="item : ${userLikes}" class="product-item">
+                <div class="img-like">
+                    <input type="hidden" name="product_buy_productidx" th:value="${item.product.product_idx}">
+                    <button>❤️</button>
+                </div>
+                <a th:href="@{|/productDetail/${item.product.product_idx}|}">
+                    <img th:src="@{${'/product-images/' + item.product.product_image.split(',')[0]}}" alt="상품 이미지">
+                </a>
+                <div class="product-name" th:text="${item.product.productName}">상품명</div>
+                <div class="product-info">
+                    <span class="like-price" th:text="${#numbers.formatInteger(item.product.product_price,3,'COMMA') + '원'}"></span>
+                    <span class="like">
+                            <span>❤️</span>
+                            <span class="product-like-count" th:text="${item.product.product_like}"></span>
+                    </span>
+                    <span class="comment" >
+                            <span>💬</span>
+                            <span th:text="${item.product.product_coment}"></span>
+                    </span>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(userLikes)}" class="no-reviews">
+                아직 좋아요 항목이 존재 하지 않습니다.
+            </div>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>
+<script>
+    // 상품 상세 정보 찜하기 API
+    document.addEventListener("DOMContentLoaded", function () {
+        const btns = document.querySelectorAll(".img-like");
+
+        btns.forEach(btn => {
+        const productIdx = btn.querySelector("input[name='product_buy_productidx']").value;
+        const productItem = btn.closest(".product-item"); // 가장 가까운 product-item 찾기 그래야지 likeCount 값을 찾을수 있음
+        const likeCountSpan = productItem.querySelector(".product-like-count"); // 좋아요 개수 표시하는 요소
+
+            // 페이지 로드 시 찜 상태 확인 (GET 요청)
+            fetch(`/product/like-status/${productIdx}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "liked") {
+                        btn.textContent = "❤️"; // 찜 상태인 경우
+                        likeCountSpan.textContent = data.likeCount; // 좋아요 개수 업데이트
+                    } else if (data.status === "not_liked") {
+                        btn.textContent = "🖤"; // 찜 상태가 아닌 경우
+                        likeCountSpan.textContent = data.likeCount; // 좋아요 개수 업데이트
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+
+            // 찜 버튼 클릭 시 토글 (POST 요청)
+            btn.addEventListener("click", function () {
+                fetch(`/product/like/${productIdx}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "added") {
+                            btn.textContent = "❤️"; // 찜 추가된 경우
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1; // 숫자 즉시 증가
+                        } else if (data.status === "removed") {
+                            btn.textContent = "🖤"; // 찜 취소된 경우
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1; // 숫자 즉시 감소
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+
+    // 정렬 기능 API
+    function changeSort() {
+        let selectedSort = document.getElementById("sort").value;
+        let currentUrl = new URL(window.location.href);
+
+        currentUrl.searchParams.set("sort", selectedSort);  // sort 파라미터 추가 또는 변경
+        currentUrl.searchParams.set("page", 0); // 정렬 변경 시 첫 페이지로 이동
+
+
+        window.location.href = currentUrl.toString(); // 새 URL로 이동
+
+    }
+
+    // 페이지 로드 시 저장된 정렬 값 적용
+    document.addEventListener("DOMContentLoaded", function () {
+        const sortSelect = document.getElementById("sort");
+
+        // URL에서 검색어(search)와 정렬값(sort)을 가져옴
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSort = urlParams.get("sort"); // URL에서 sort 값 가져오기
+
+
+        // URL에서 sort 값이 있으면 드롭다운에 설정하고, 없으면 기본값 설정
+        if (urlSort) {
+            sortSelect.value = urlSort;
+        } else {
+            sortSelect.value = "latest"; // 기본값 설정
+        }
+    });
+</script>

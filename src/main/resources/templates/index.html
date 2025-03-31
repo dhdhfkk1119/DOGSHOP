@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <th:block th:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/index.css}">
+    </th:block>
+</head>
+<body>
+<th:block th:fragment="content">
+    <div class="index-container">
+        <div class="container-inner">
+            <!-- 가장 많이 팔린 상품 -->
+            <div class="inner-rank-sale">
+                <h2 class="h2-context">한달 동안 가장 많이 팔린 용품</h2>
+                <div class="swiper best-selling-swiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide product-item" th:each="product : ${bestSellingProducts}">
+                            <a th:href="@{|/productDetail/${product.product_idx}|}">
+                                <div class="product-image">
+                                    <img th:src="@{${'/product-images/' + product.product_image.split(',')[0]}}" alt="상품 이미지">
+                                </div>
+                            </a>
+                            <div class="product-info">
+                                <span class="like">
+                                    <span>❤️</span>
+                                    <span class="product-like-count" th:text="${product.product_like}"></span>
+                                </span>
+                                    <span class="comment">
+                                    <span>💬</span>
+                                    <span th:text="${product.product_coment}"></span>
+                                </span>
+                            </div>
+                            <div class="product-name">
+                                <p th:text="${product.productName}">상품 이름</p>
+                            </div>
+                            <div class="product-price">
+                                <div th:text="${#numbers.formatInteger(product.product_price, 3, 'COMMA') + ' 원'}"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 슬라이드 버튼 -->
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+                <div th:if="${#lists.isEmpty(bestSellingProducts)}" class="no-reviews">
+                    아직 등록된 상품이 없습니다.
+                </div>
+            </div>
+
+            <!-- 새롭게 등록된 상품 -->
+            <div class="inner-rank-new">
+                <h2 class="h2-context">한달 동안 새롭게 등록된 용품</h2>
+                <div class="swiper new-products-swiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide product-item" th:each="product : ${newProducts}">
+                            <a th:href="@{|/productDetail/${product.product_idx}|}">
+                                <div class="product-image">
+                                    <img th:src="@{${'/product-images/' + product.product_image.split(',')[0]}}" alt="상품 이미지">
+                                </div>
+                            </a>
+                            <div class="product-info">
+                            <span class="like">
+                                <span>❤️</span>
+                                <span class="product-like-count" th:text="${product.product_like}"></span>
+                            </span>
+                                <span class="comment">
+                                <span>💬</span>
+                                <span th:text="${product.product_coment}"></span>
+                            </span>
+                            </div>
+                            <div class="product-name">
+                                <p th:text="${product.productName}">상품 이름</p>
+                            </div>
+                            <div class="product-price">
+                                <div th:text="${#numbers.formatInteger(product.product_price, 3, 'COMMA') + ' 원'}"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 슬라이드 버튼 -->
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+                <div th:if="${#lists.isEmpty(newProducts)}" class="no-reviews">
+                    아직 등록된 상품이 없습니다.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</th:block>
+</body>
+</html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        new Swiper(".best-selling-swiper", {
+            slidesPerView: 5, // 한 줄에 5개
+            spaceBetween: 20, // 간격
+            navigation: {
+                nextEl: ".best-selling-swiper .swiper-button-next",
+                prevEl: ".best-selling-swiper .swiper-button-prev",
+            },
+            loop: true, // 무한 반복
+        });
+
+        new Swiper(".new-products-swiper", {
+            slidesPerView: 5,
+            spaceBetween: 20,
+            navigation: {
+                nextEl: ".new-products-swiper .swiper-button-next",
+                prevEl: ".new-products-swiper .swiper-button-prev",
+            },
+            loop: true,
+        });
+    });
+</script>

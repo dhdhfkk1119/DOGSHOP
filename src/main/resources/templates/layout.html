@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>스프링부트 쇼핑몰</title>
+
+  <!-- 공통 스타일 -->
+  <link rel="stylesheet" th:href="@{/css/header.css}">
+  <link rel="stylesheet" th:href="@{/css/footer.css}">
+
+  <!-- 페이지별 CSS 추가 -->
+  <th:block th:replace="~{::css}"></th:block>
+</head>
+<body>
+<div th:replace="~{header :: header}"></div>
+
+<main>
+  <th:block th:replace="~{::content}"></th:block>
+</main>
+
+<div th:replace="~{footer :: footer}"></div>
+<!--   js   -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery 추가 -->
+<!-- 페이지별 JS 추가 -->
+<th:block th:replace="~{::script}"></th:block>
+</body>
+</html>

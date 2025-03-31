@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <th:block th:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/order.css}">
+    </th:block>
+</head>
+<body>
+<th:block th:fragment="content">
+    <div class="order-container">
+        <div class="order-container-inner">
+            <h2>주문 내역</h2>
+
+            <!-- 검색창 -->
+            <div class="search-container">
+                <input type="text" class="search-box" name="search" id="search" placeholder="검색어를 입력하세요">
+                <span class="search-icon"><img th:src="@{/local-images/search-icon.png}" alt="" onclick="searchBtn()"></span>
+            </div>
+        </div>
+
+        <!-- 상품 리스트 (흰색 배경) -->
+        <div class="order-list" th:each="buyItem : ${buyItems}">
+            <div class="order-item">
+                <div class="order-header">
+                    <span class="order-date" th:text="${#temporals.format(buyItem.productBuy.product_buy_at, 'yyyy-MM-dd')}"></span>
+                    <p class="order-detail" onclick="orderDetail()">주문 상세</p>
+                </div>
+
+                <div class="order-status">
+                    <span th:if="${buyItem.productBuy.productStatus == 'delivery'}">배송 완료</span>
+                    <span th:if="${buyItem.productBuy.productStatus == 'completed'}">구매 확정</span>
+                </div>
+                <div class="order-content">
+                    <a th:href="@{|/productDetail/${buyItem.product.product_idx}|}">
+                        <img th:src="@{${'/product-images/' + buyItem.product.product_image.split(',')[0]}}" alt="상품 이미지" class="order-image">
+                    </a>
+                    <div class="order-info">
+                        <span class="item-name" th:text="${buyItem.product.productName}"></span>
+                        <span class="item-quantity" th:text="${buyItem.productBuy.product_buy_quantity} + 개"></span>
+                        <span class="total-price" th:data-quantity="${buyItem.productBuy.product_buy_quantity}" th:data-price="${buyItem.product.product_price}">
+                            <span class="calculated-price"></span>원
+                        </span>
+                    </div>
+                    <div class="order-detail-info">
+                        <div>
+                            <span class="label">No.</span>
+                            <span class="product-buy-idx info-span" th:text="${buyItem.product.product_idx}"></span>
+                        </div>
+                        <div>
+                            <span class="label">판매회사 : </span>
+                            <span class="product-buy-user info-span" th:text="${buyItem.product.product_user}"></span>
+                        </div>
+                        <div class="over-flow-content">
+                            <span class="label">제품 설명 : </span>
+                            <span class="product-buy-content info-span" th:text="${buyItem.product.productContent}"></span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 재구매 버튼 -->
+                <div class="form-btn">
+                    <a class="review-completed" th:if="${buyItem.productBuy.productStatus == 'completed' and buyItem.hasReviewed}">
+                        리뷰 작성 완료
+                    </a>
+                    <button class="cancel-btn" th:if="${buyItem.productBuy.productStatus == 'delivery'}"
+                            th:data-product-buy-idx="${buyItem.productBuy.productBuyIdx}">환불/취소 하기
+                    </button>
+                    <a class="review-btn" th:if="${buyItem.productBuy.productStatus == 'completed' and not buyItem.hasReviewed}"
+                       th:href="@{|/review/${buyItem.productBuy.productBuyIdx}|}" th:value="${buyItem.productBuy.productBuyIdx}" th:data-product-buy-idx="${buyItem.productBuy.productBuyIdx}" >
+                        리뷰작성 하기
+                    </a>
+                    <a th:if="${buyItem.productBuy.productStatus == 'completed'}" class="reorder-btn"
+                       th:href="@{|/productDetail/${buyItem.product.product_idx}|}">
+                        재구매 하기
+                    </a>
+                    <button class="reorder-btn completed-btn" th:data-product-buy-idx="${buyItem.productBuy.productBuyIdx}"
+                            th:if="${buyItem.productBuy.productStatus == 'delivery'}">구매 확정
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div th:if="${#lists.isEmpty(buyItems)}" class="no-reviews">
+            아직 구매를 한 항목이 없습니다.
+        </div>
+    </div>
+
+
+</th:block>
+</body>
+</html>
+<script>
+    // 수량 * 가격 표시
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".total-price").forEach(span => {
+            let price = parseInt(span.getAttribute("data-price"), 10); // 문자열 → 숫자 변환
+            let quantity = parseInt(span.getAttribute("data-quantity"), 10);
+            let total = price * quantity;
+            span.querySelector(".calculated-price").textContent = total.toLocaleString();
+        });
+    });
+
+    function orderDetail(event) {
+        let orderItem = event.target.closest(".order-item"); // 클릭한 요소의 부모 order-item 찾기
+        let detailInfo = orderItem.querySelector(".order-detail-info"); // 해당 주문 상세 정보 찾기
+
+        if (detailInfo.style.display === "none" || detailInfo.style.display === "") {
+            detailInfo.style.display = "block";
+            detailInfo.style.maxHeight = detailInfo.scrollHeight + "px";
+            detailInfo.style.transform = "translateY(0px)";
+        } else {
+            detailInfo.style.maxHeight = "0px";
+            detailInfo.style.transform = "translateY(-10px)";
+            setTimeout(() => {
+                detailInfo.style.display = "none";
+            }, 300);
+        }
+    }
+
+    // 모든 "주문 상세" 버튼에 클릭 이벤트 추가
+    document.querySelectorAll(".order-detail").forEach(button => {
+        button.addEventListener("click", orderDetail);
+    });
+
+    //구매확정 상태에서 취소 환불 불가능
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.cancel-btn').forEach(function (button) {
+            // 상품 상태가 'completed'일 경우 버튼 비활성화
+            const productStatus = button.dataset.productStatus;
+            if (productStatus === 'completed') {
+                button.disabled = true;
+            }
+        });
+    });
+
+    // 상품 주문 취소 및 캔슬
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".cancel-btn").forEach(function (button) {
+            button.addEventListener("click", function () {
+                let productBuyProductIdx = this.dataset.productBuyIdx;
+
+                if (!confirm("상품을 취소하시겠습니까?")) {
+                    return;
+                }
+
+                fetch("/order/cancel", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        productBuyProductIdx: productBuyProductIdx,
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            alert(data.message);
+                            location.reload(); // 구매 후 페이지 새로고침 (장바구니 내용 갱신)
+                        } else {
+                            alert("구매 실패: " + data.message);
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+
+    // 상품 주문 구매 확정
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".completed-btn").forEach(function (button) {
+            button.addEventListener("click", function () {
+                let productBuyProductIdx = this.dataset.productBuyIdx;
+
+                if (!confirm("구매 확정을 하시겠습니까?")) {
+                    return;
+                }
+
+                fetch("/order/completed", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        productBuyProductIdx: productBuyProductIdx,
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            alert(data.message);
+                            location.reload(); // 구매 후 페이지 새로고침 (장바구니 내용 갱신)
+                        } else {
+                            alert("구매 실패: " + data.message);
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+
+    // 페이지 로드 시 저장된 정렬 값 적용
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputsearch = document.getElementById("search");
+
+        // URL에서 검색어(search)와 정렬값(sort)을 가져옴
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSearch = urlParams.get("search"); // URL에서 search 값 가져오기
+
+        // URL에서 search 값이 있으면 input에 설정하고, 없으면 비워둠
+        if (urlSearch) {
+            inputsearch.value = urlSearch;
+        } else {
+            inputsearch.value = ""; // 검색어가 없다면 비워둠
+        }
+    });
+
+    //검색한 값 보내기
+    function searchBtn() {
+        let searchValue = document.getElementById("search").value.trim();
+
+        const url = new URL(window.location);
+        if (searchValue) {
+            url.searchParams.set("search", searchValue); // 검색어 추가
+        } else {
+            url.searchParams.delete("search"); // 검색어 없으면 제거
+        }
+        window.location.href = url.toString();
+    }
+
+    // 🔹 엔터 키 감지 이벤트 추가
+    document.getElementById("search").addEventListener("keyup", function (event) {
+        if (event.key === "Enter") {
+            searchBtn();  // 엔터 키 누르면 검색 실행
+        }
+    });
+
+</script>

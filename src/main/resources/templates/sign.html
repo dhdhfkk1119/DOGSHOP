@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <meta charset="UTF-8">
+    <th:block th:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/sign.css}">
+    </th:block>
+
+
+    <title>회원가입</title>
+</head>
+<body>
+<th:block th:fragment="content">
+<div class="container">
+    <h2>회원가입</h2>
+    <form th:action="@{/sign}" method="post" th:object="${signDTO}">
+        <!-- 아이디 -->
+        <div class="form-group">
+            <label for="id">아이디</label>
+            <div style="display: flex;">
+                <input type="text" id="id" th:field="*{id}" class="form-control" style="padding: 0px 10px;">
+                <button type="button" class="check-btn" style="width: 75px;" onclick="checkDuplicateId()">중복<br>확인</button>
+            </div>
+            <!-- 중복 확인 결과 메시지 -->
+            <span id="id-check-message" style="font-size: 14px; margin-left: 10px;"></span>
+            <span th:if="${#fields.hasErrors('id')}" th:errors="*{id}" class="error"></span>
+        </div>
+
+        <!-- 비밀번호 -->
+        <div class="form-group">
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" th:field="*{password}">
+            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error"></span>
+        </div>
+
+        <!-- 비밀번호 확인 -->
+        <div class="form-group">
+            <label for="repassword">비밀번호 확인</label>
+            <input type="password" id="repassword" th:field="*{repassword}">
+            <span th:if="${#fields.hasErrors('repassword')}" th:errors="*{repassword}" class="error"></span>
+        </div>
+
+        <!-- 이름 -->
+        <div class="form-group">
+            <label for="name">이름</label>
+            <input type="text" id="name" th:field="*{name}">
+            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></span>
+        </div>
+
+        <!-- 성별 -->
+        <div class="form-group">
+            <label for="sex">성별</label>
+            <select id="sex" th:field="*{sex}">
+                <option value="male">남자</option>
+                <option value="female">여자</option>
+            </select>
+        </div>
+
+        <!-- 생년월일 -->
+        <div class="form-group">
+            <label for="birthYear">생년월일</label>
+            <div style="display: flex; gap: 5px;">
+                <!-- 연도 선택 -->
+                <select id="birthYear" th:field="*{year}">
+                    <option value="">년</option>
+                    <option th:each="year : ${#numbers.sequence(1900, 2025)}" th:value="${year}" th:text="${year}"></option>
+                </select>
+
+                <!-- 월 선택 -->
+                <select id="birthMonth" th:field="*{month}">
+                    <option value="">월</option>
+                    <option th:each="month : ${#numbers.sequence(1, 12)}" th:value="${month}" th:text="${month}"></option>
+                </select>
+
+                <!-- 일 선택 -->
+                <select id="birthDay" th:field="*{day}">
+                    <option value="">일</option>
+                    <option th:each="day : ${#numbers.sequence(1, 31)}" th:value="${day}" th:text="${day}"></option>
+                </select>
+            </div>
+            <span th:if="${#fields.hasErrors('year')}" th:errors="*{year}" class="error"></span>
+            <span th:if="${#fields.hasErrors('month')}" th:errors="*{month}" class="error"></span>
+            <span th:if="${#fields.hasErrors('day')}" th:errors="*{day}" class="error"></span>
+        </div>
+
+        <!-- 이메일 -->
+        <div class="form-group">
+            <label>이메일</label>
+            <div style="display: flex;">
+                <input type="text" th:field="*{emailLocal}" placeholder="이메일 아이디">
+                <span style="line-height: 35px">@</span>
+
+                <!-- 직접 입력 input -->
+                <input type="text" id="custom-domain" placeholder="직접 입력"
+                       oninput="updateEmailDomain()" style="display: none;">
+
+                <!-- 도메인 선택 -->
+                <select id="domain-list" onchange="toggleEmailInput()">
+                    <option value="">선택해주세요</option>
+                    <option value="naver.com">naver.com</option>
+                    <option value="gmail.com">gmail.com</option>
+                </select>
+
+                <!-- 실제 전송할 emailDomain -->
+                <input type="hidden" id="emailDomain" name="emailDomain">
+
+            </div>
+            <span th:if="${#fields.hasErrors('emailLocal')}" th:errors="*{emailLocal}" class="error"></span>
+            <span th:if="${#fields.hasErrors('emailDomain')}" th:errors="*{emailDomain}" class="error"></span>
+        </div>
+
+        <!-- 휴대폰 번호 -->
+        <div class="form-group">
+            <label for="phone">휴대폰 번호</label>
+            <input type="tel" id="phone" th:field="*{phone}" onfocus="this.placeholder=''" maxlength="13" oninput="autoHyphen(this)" pattern="010-[0-9]{3,4}-[0-9]{4}" placeholder="010-xxxx-xxxx" autocomplete="off" name="users_phone"/>
+            <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="error"></span>
+        </div>
+
+        <!-- 회원가입 완료 버튼 -->
+        <input type="submit" value="작성 완료" class="submit-btn">
+
+        <!-- 성공/실패 메시지 -->
+        <div th:if="${error}" class="message error-message">[[${error}]]</div>
+        <div th:if="${message}" class="message success-message">[[${message}]]</div>
+    </form>
+</div>
+</th:block>
+</body>
+</html>
+<script>
+    $(document).ready(function(){
+        // 생년월일
+        var now = new Date();
+        var year = now.getFullYear();
+        var mon = (now.getMonth() + 1) > 9 ? ''+(now.getMonth() + 1) : '0'+(now.getMonth() + 1);
+        var day = (now.getDate()) > 9 ? ''+(now.getDate()) : '0'+(now.getDate());
+        //년도 selectbox만들기
+        for(var i = 1900 ; i <= year ; i++) {
+            $('#year').append('<option value="' + i + '">' + i + '년</option>');
+        }
+
+        // 월별 selectbox 만들기
+        for(var i=1; i <= 12; i++) {
+            var mm = i > 9 ? i : "0"+i ;
+            $('#month').append('<option value="' + mm + '">' + mm + '월</option>');
+        }
+
+        // 일별 selectbox 만들기
+        for(var i=1; i <= 31; i++) {
+            var dd = i > 9 ? i : "0"+i ;
+            $('#day').append('<option value="' + dd + '">' + dd+ '일</option>');
+        }
+        $("#year  > option[value="+year+"]").attr("selected", "true");
+        $("#month  > option[value="+mon+"]").attr("selected", "true");
+        $("#day  > option[value="+day+"]").attr("selected", "true");
+    });
+
+    // 중복확인
+    function checkDuplicateId() {
+        var userId = document.getElementById("id").value;
+        var messageSpan = document.getElementById("id-check-message");
+
+        if (!userId) {
+            messageSpan.style.color = "red";
+            messageSpan.textContent = "아이디를 입력해주세요.";
+            return;
+        }
+
+        fetch("/checkIdDuplicate?id=" + encodeURIComponent(userId))
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    messageSpan.style.color = "red";
+                    messageSpan.textContent = "이미 사용 중인 아이디입니다.";
+                } else {
+                    messageSpan.style.color = "green";
+                    messageSpan.textContent = "사용 가능한 아이디입니다.";
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                messageSpan.style.color = "red";
+                messageSpan.textContent = "서버 오류가 발생했습니다.";
+            });
+    }
+
+    function toggleEmailInput() {
+        var selectElement = document.getElementById("domain-list");
+        var inputElement = document.getElementById("custom-domain");
+        var hiddenField = document.getElementById("emailDomain");
+
+        if (selectElement.value === "") {
+            inputElement.style.display = "block";  // 직접 입력 활성화
+            inputElement.value = ""; // 기존 값 초기화
+            hiddenField.value = ""; // hidden 값도 초기화
+        } else {
+            inputElement.style.display = "none";   // 직접 입력 숨기기
+            hiddenField.value = selectElement.value.trim(); // 선택한 도메인 값 저장
+        }
+    }
+
+    function updateEmailDomain() {
+        var inputElement = document.getElementById("custom-domain");
+        var hiddenField = document.getElementById("emailDomain");
+
+        hiddenField.value = inputElement.value.trim(); // 직접 입력한 도메인 저장
+    }
+
+    window.onload = function() {
+        document.getElementById("domain-list").value = ""; // 선택 초기화
+        document.getElementById("custom-domain").value = ""; // 직접 입력 초기화
+    };
+
+
+    document.querySelector(".submit-btn").addEventListener("click", function (event) {
+        if (!validateEmail()) {
+            event.preventDefault();
+        }
+    })
+
+
+    //자동하이픈기능추가
+    const autoHyphen = (target) => {
+        target.value = target.value
+            .replace(/[^0-9]/g, '') // 숫자만 입력 가능
+            .slice(0, 11) // 최대 11자리까지만 허용
+            .replace(/^(\d{0,3})(\d{0,4})(\d{0,4})$/, "$1-$2-$3")
+            .replace(/(\-{1,2})$/g, ""); // 불필요한 하이픈 제거
+    };
+</script>
