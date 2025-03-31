@@ -1,4 +1,5 @@
 ### 코드에 대한 자세한 설명은 -> https://www.notion.so/1afccc56b31e8013b325d0fb88095146 ( 노션 )
+### 코드에 대한 구현 영상은 -> https://youtu.be/-zrtzJqTZxw (유튜브)
 ### 작품 제목 : SpringBoot를 이용한 애완용품 판매점 
 
 > - 기존에 있는 애완용품 쇼핑몰이랑 기능은 비슷함 <br>
