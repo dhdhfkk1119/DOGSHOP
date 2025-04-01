@@ -65,6 +65,7 @@ public class ProductLikeController {
     @PostMapping("/product/like/{productIdx}")
     public ResponseEntity<Map<String, Object>> toggleProductLike(@PathVariable Long productIdx, Principal principal) {
         Map<String, Object> response = new HashMap<>();
+
         // 로그인 확인
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

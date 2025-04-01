@@ -53,19 +53,26 @@ public class ProductBuyController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        Optional<Product> productOpt = productRepository.findById(productBuyProductIdx);
-        Product product = productOpt.get();
-
-        String username = principal.getName();
-        Sign sign = signUserRepository.findById(username)
-                .orElseThrow(() -> new RuntimeException("유저 정보를 찾을 수 없습니다."));
-        Long useridx = sign.getIdx();
 
         if (quantity == null || quantity <= 0) {
             response.put("status", "error");
             response.put("message", "수량을 선택해주세요.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+
+        Optional<Product> productOpt = productRepository.findById(productBuyProductIdx);
+        if (!productOpt.isPresent()) {
+            response.put("status", "error");
+            response.put("message", "상품을 찾을 수 없습니다.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Product product = productOpt.get();
+        String username = principal.getName();
+        Sign sign = signUserRepository.findById(username)
+                .orElseThrow(() -> new RuntimeException("유저 정보를 찾을 수 없습니다."));
+        Long useridx = sign.getIdx();
+
         try {
             if ("cart".equals(action)) {
                 cartService.addCart(productBuyProductIdx, quantity, useridx);
@@ -80,17 +87,20 @@ public class ProductBuyController {
             } else {
                 response.put("status", "error");
                 response.put("message", "잘못된 요청입니다.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
             return ResponseEntity.ok(response);
 
         } catch (IllegalStateException e) {
-            response.put("status", "exists"); // 기존 "error" 대신 "exists"로 상태 변경
-            response.put("message", e.getMessage()); // "이미 장바구니에 담긴 상품입니다."
-            return ResponseEntity.ok(response);  // 400 -> 200 으로 변경
+            response.put("status", "exists");
+            response.put("message", e.getMessage());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("status", "error");
             response.put("message", "처리 중 오류가 발생했습니다." + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+
 }
